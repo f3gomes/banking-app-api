@@ -11,22 +11,30 @@ datasource db {
 }
 
 model Users {
-  id        String   @id @default(cuid())
-  username  String   @unique
+  id        String @id @default(cuid())
+  username  String @unique
   password  String
-  accountId Accounts @relation(fields: [id], references: [id])
+  accountId String
+
+  account Accounts @relation(fields: [accountId], references: [id])
 }
 
 model Accounts {
-  id           String         @id @default(cuid())
-  balance      String
-  Users        Users[]
-  Transactions Transactions[]
+  id      String @id @default(cuid())
+  balance String
+
+  users   Users[]
+  debits  Transactions[] @relation("debits")
+  credits Transactions[] @relation("credits")
 }
 
 model Transactions {
-  id               String   @id @default(cuid())
-  debitedAcoountId Accounts @relation(fields: [id], references: [id])
-  value            String
-  createdAt        DateTime @default(now())
+  id                String   @id @default(cuid())
+  value             String
+  createdAt         DateTime @default(now())
+  debitedAccountId  String
+  creditedAccountId String
+
+  debits  Accounts @relation("debits", fields: [debitedAccountId], references: [id])
+  credits Accounts @relation("credits", fields: [creditedAccountId], references: [id])
 }
