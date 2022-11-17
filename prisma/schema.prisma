@@ -21,7 +21,7 @@ model Users {
 
 model Accounts {
   id      String @id @default(cuid())
-  balance String
+  balance Float
 
   users   Users[]
   debits  Transactions[] @relation("debits")
