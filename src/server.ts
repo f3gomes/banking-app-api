@@ -110,7 +110,6 @@ app.post("/cashout", verifyJWT, async (req, res) => {
       });
 
       if (balance?.balance < amount) {
-        console.log(userData);
         return res.status(400).send({ error: "Insuficient funds!" });
       } else {
         await prisma.accounts.update({
@@ -128,6 +127,14 @@ app.post("/cashout", verifyJWT, async (req, res) => {
           },
           where: {
             id: accountIdCashIn?.accountId,
+          },
+        });
+
+        await prisma.transactions.create({
+          data: {
+            value: String(amount),
+            creditedAccountId: String(accountIdCashIn?.accountId),
+            debitedAccountId: String(userAuth?.accountId),
           },
         });
 
