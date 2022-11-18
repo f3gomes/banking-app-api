@@ -60,6 +60,83 @@ app.get("/balance", verifyJWT, async (req, res) => {
   }
 });
 
+app.post("/cashout", verifyJWT, async (req, res) => {
+  const token = req.headers["authorization"];
+  const { userCashIn, amount } = req.body;
+
+  const userData = jwt.decode(token as string);
+  const id = userData?.userId;
+
+  const userAuth = await prisma.users.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  const findUserid = await prisma.users.findFirst({
+    select: {
+      id: true,
+    },
+
+    where: {
+      username: userCashIn,
+    },
+  });
+
+  if (findUserid?.id === id) {
+    return res.status(400).send({ error: "Transaction not allowed!" });
+  } else {
+    const accountIdCashIn = await prisma.users.findFirst({
+      select: {
+        accountId: true,
+      },
+
+      where: {
+        username: userCashIn,
+      },
+    });
+
+    if (!findUserid) {
+      return res.status(400).send({ error: "User not found!" });
+    } else {
+      const balance = await prisma.accounts.findUnique({
+        select: {
+          balance: true,
+        },
+
+        where: {
+          id: userAuth.accountId,
+        },
+      });
+
+      if (balance?.balance < amount) {
+        console.log(userData);
+        return res.status(400).send({ error: "Insuficient funds!" });
+      } else {
+        await prisma.accounts.update({
+          data: {
+            balance: balance?.balance - amount,
+          },
+          where: {
+            id: userAuth.accountId,
+          },
+        });
+
+        await prisma.accounts.update({
+          data: {
+            balance: balance?.balance + amount,
+          },
+          where: {
+            id: accountIdCashIn?.accountId,
+          },
+        });
+
+        return res.status(200).send({ message: "Transfer successfuly done!" });
+      }
+    }
+  }
+});
+
 app.post("/users/new", async (req, res) => {
   const { username, password } = req.body;
 
