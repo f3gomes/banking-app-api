@@ -20,7 +20,7 @@ getTransactionsRouter.get("/transactions", verifyJWT, async (req, res) => {
   });
 
   if (!user) {
-    return res.status(400).send({ error: "User not found!" });
+    return res.status(401).send({ error: "User not auth" });
   } else {
     const debitedAccount = await prisma.transactions.findFirst({
       select: {

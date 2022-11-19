@@ -20,7 +20,7 @@ model Users {
 }
 
 model Accounts {
-  id      String @id @default(cuid())
+  id      String @id @default(uuid())
   balance Float
 
   users   Users[]
