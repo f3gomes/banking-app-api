@@ -24,17 +24,17 @@ postUserRouter.post("/users/new", async (req, res) => {
   if (username.length < 3) {
     return res
       .status(400)
-      .send({ message: "Username field must have at least 3 characters!" });
+      .send({ error: "Username field must have at least 3 characters!" });
   }
 
   if (password.length < 8) {
     return res
       .status(400)
-      .send({ message: "Password field must have at least 8 characters!" });
+      .send({ error: "Password field must have at least 8 characters!" });
   }
 
   if (alreadyExists) {
-    return res.status(403).send({ message: "User already exists!" });
+    return res.status(403).send({ error: "User already exists!" });
   } else {
     const pass = await createPassword(password);
 

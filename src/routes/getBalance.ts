@@ -21,7 +21,7 @@ getBalanceRouter.get("/balance", verifyJWT, async (req, res) => {
   });
 
   if (!user) {
-    res.status(400).send({ message: "User not found!" });
+    res.status(400).send({ error: "User not found!" });
   } else {
     const balance = await prisma.accounts.findUnique({
       select: {
