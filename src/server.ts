@@ -5,6 +5,7 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import { createPassword, validatePassord, verifyJWT } from "./utils/auth";
 import { helloRouter } from "./routes/hello";
+import { getUsersRouter } from "./routes/users";
 
 const prisma = new PrismaClient();
 const secret = String(process.env.JWT_SECRET);
@@ -16,18 +17,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use(helloRouter);
-
-app.get("/users", verifyJWT, async (req, res) => {
-  const users = await prisma.users.findMany({
-    select: {
-      id: true,
-      username: true,
-      accountId: true,
-    },
-  });
-
-  res.status(200).send({ users });
-});
+app.use(getUsersRouter);
 
 app.get("/balance", verifyJWT, async (req, res) => {
   const token = req.headers["authorization"];
