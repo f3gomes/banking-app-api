@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import { createPassword, validatePassord, verifyJWT } from "./utils/auth";
+import { helloRouter } from "./routes/hello";
 
 const prisma = new PrismaClient();
 const secret = String(process.env.JWT_SECRET);
@@ -14,9 +15,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.status(200).send({ message: "Hello NG Cash!" });
-});
+app.use(helloRouter);
 
 app.get("/users", verifyJWT, async (req, res) => {
   const users = await prisma.users.findMany({
