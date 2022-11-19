@@ -5,7 +5,8 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import { createPassword, validatePassord, verifyJWT } from "./utils/auth";
 import { helloRouter } from "./routes/hello";
-import { getUsersRouter } from "./routes/users";
+import { getUsersRouter } from "./routes/getUsers";
+import { getBalanceRouter } from "./routes/getBalance";
 
 const prisma = new PrismaClient();
 const secret = String(process.env.JWT_SECRET);
@@ -18,36 +19,7 @@ app.use(cors());
 
 app.use(helloRouter);
 app.use(getUsersRouter);
-
-app.get("/balance", verifyJWT, async (req, res) => {
-  const token = req.headers["authorization"];
-
-  const userData = jwt.decode(token as string);
-
-  const id = userData?.userId;
-
-  const user = await prisma.users.findUnique({
-    where: {
-      id,
-    },
-  });
-
-  if (!user) {
-    res.status(400).send({ message: "User not found!" });
-  } else {
-    const balance = await prisma.accounts.findUnique({
-      select: {
-        balance: true,
-      },
-
-      where: {
-        id: user.accountId,
-      },
-    });
-
-    res.status(200).send({ balance });
-  }
-});
+app.use(getBalanceRouter);
 
 app.get("/transactions", verifyJWT, async (req, res) => {
   const token = req.headers["authorization"];
