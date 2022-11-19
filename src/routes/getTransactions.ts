@@ -43,7 +43,7 @@ getTransactionsRouter.get("/transactions", verifyJWT, async (req, res) => {
     });
 
     if (debitedAccount || creditedAccount) {
-      const transaction = await prisma.transactions.findFirst({
+      const transactions = await prisma.transactions.findMany({
         where: {
           OR: [
             { creditedAccountId: creditedAccount?.creditedAccountId },
@@ -52,7 +52,7 @@ getTransactionsRouter.get("/transactions", verifyJWT, async (req, res) => {
         },
       });
 
-      return res.status(200).send({ transaction });
+      return res.status(200).send({ transactions });
     } else {
       return res.status(400).send({ error: "No transactions found!" });
     }
