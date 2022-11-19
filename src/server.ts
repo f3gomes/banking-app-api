@@ -1,13 +1,15 @@
-import express from "express";
 import bodyParser from "body-parser";
-import { PrismaClient } from "@prisma/client";
-import cors from "cors";
+import express from "express";
 import jwt from "jsonwebtoken";
-import { createPassword, validatePassord, verifyJWT } from "./utils/auth";
+import cors from "cors";
+
+import { PrismaClient } from "@prisma/client";
+import { createPassword, validatePassord } from "./utils/auth";
 import { helloRouter } from "./routes/hello";
 import { getUsersRouter } from "./routes/getUsers";
 import { getBalanceRouter } from "./routes/getBalance";
 import { getTransactionsRouter } from "./routes/getTransactions";
+import { postCashoutRouter } from "./routes/postCashout";
 
 const prisma = new PrismaClient();
 const secret = String(process.env.JWT_SECRET);
@@ -22,90 +24,7 @@ app.use(helloRouter);
 app.use(getUsersRouter);
 app.use(getBalanceRouter);
 app.use(getTransactionsRouter);
-
-app.post("/cashout", verifyJWT, async (req, res) => {
-  const token = req.headers["authorization"];
-  const { userCashIn, amount } = req.body;
-
-  const userData = jwt.decode(token as string);
-  const id = userData?.userId;
-
-  const userAuth = await prisma.users.findUnique({
-    where: {
-      id,
-    },
-  });
-
-  const findUserid = await prisma.users.findFirst({
-    select: {
-      id: true,
-    },
-
-    where: {
-      username: userCashIn,
-    },
-  });
-
-  if (findUserid?.id === id) {
-    return res.status(400).send({ error: "Transaction not allowed!" });
-  } else {
-    const accountIdCashIn = await prisma.users.findFirst({
-      select: {
-        accountId: true,
-      },
-
-      where: {
-        username: userCashIn,
-      },
-    });
-
-    if (!findUserid) {
-      return res.status(400).send({ error: "User not found!" });
-    } else {
-      const balance = await prisma.accounts.findUnique({
-        select: {
-          balance: true,
-        },
-
-        where: {
-          id: userAuth.accountId,
-        },
-      });
-
-      if (balance?.balance < amount) {
-        return res.status(400).send({ error: "Insuficient funds!" });
-      } else {
-        await prisma.accounts.update({
-          data: {
-            balance: balance?.balance - amount,
-          },
-          where: {
-            id: userAuth.accountId,
-          },
-        });
-
-        await prisma.accounts.update({
-          data: {
-            balance: balance?.balance + amount,
-          },
-          where: {
-            id: accountIdCashIn?.accountId,
-          },
-        });
-
-        await prisma.transactions.create({
-          data: {
-            value: String(amount),
-            creditedAccountId: String(accountIdCashIn?.accountId),
-            debitedAccountId: String(userAuth?.accountId),
-          },
-        });
-
-        return res.status(200).send({ message: "Transfer successfuly done!" });
-      }
-    }
-  }
-});
+app.use(postCashoutRouter);
 
 app.post("/users/new", async (req, res) => {
   const { username, password } = req.body;
