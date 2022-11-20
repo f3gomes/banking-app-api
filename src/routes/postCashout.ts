@@ -11,7 +11,7 @@ postCashoutRouter.post("/cashout", verifyJWT, async (req, res) => {
   const token = req.headers["authorization"];
   const { userCashIn, amount } = req.body;
 
-  const userData = jwt.decode(token as string);
+  const userData: any = jwt.decode(token as string);
   const id = userData?.userId;
 
   const userAuth = await prisma.users.findUnique({

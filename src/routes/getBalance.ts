@@ -10,7 +10,7 @@ export const getBalanceRouter = Router();
 getBalanceRouter.get("/balance", verifyJWT, async (req, res) => {
   const token = req.headers["authorization"];
 
-  const userData = jwt.decode(token as string);
+  const userData: any = jwt.decode(token as string);
 
   const id = userData?.userId;
 
