@@ -44,7 +44,7 @@ postCashoutRouter.post("/cashout", verifyJWT, async (req, res) => {
     });
 
     if (!findUserid) {
-      return res.status(400).send({ error: "User not found!" });
+      return res.status(400).send({ error: "User not auth!" });
     } else {
       const balance = await prisma.accounts.findUnique({
         select: {
