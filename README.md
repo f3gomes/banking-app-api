@@ -1,7 +1,7 @@
 
-# NGcash Challenge - Backend
+# Banking App - Backend
 
-API NGcash
+Banking API
 
 
 ## Executar
